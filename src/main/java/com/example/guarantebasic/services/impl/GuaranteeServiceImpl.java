@@ -8,11 +8,13 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 public class GuaranteeServiceImpl implements GuaranteeService {
     private GuaranteeRepository guaranteeRepository;
+
     public GuaranteeServiceImpl(GuaranteeRepository guaranteeRepository) {
         this.guaranteeRepository = guaranteeRepository;
     }
@@ -38,6 +40,27 @@ public class GuaranteeServiceImpl implements GuaranteeService {
         Guarantee savedGuarantee = guaranteeRepository.save(guarantee);
         return mapToGuaranteeDto(savedGuarantee);
     }
+
+    @Override
+    public GuaranteeDto updateGuarantee(UUID id, GuaranteeDto dto) {
+        guaranteeRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Guarantee not found: " + id));
+
+        Guarantee guarantee = mapDtoToGuarantee(dto);
+        guarantee.setId(id);
+        Guarantee updated = guaranteeRepository.save(guarantee);
+        return mapToGuaranteeDto(updated);
+    }
+
+
+    @Override
+    public void deleteGuarantee(Long id) {
+        if (!guaranteeRepository.existsById(id)) {
+            throw new EntityNotFoundException("Guarantee not found: " + id);
+        }
+        guaranteeRepository.deleteById(id);
+    }
+
 
     private Guarantee mapDtoToGuarantee(GuaranteeDto guaranteeDto) {
         return Guarantee.builder()
